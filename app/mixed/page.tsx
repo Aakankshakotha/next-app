@@ -1,45 +1,31 @@
+import { Suspense } from "react";
 import {
 	Box,
 	Container,
 	Typography,
 	Paper,
-	Card,
-	CardContent,
+	Skeleton,
 	Link,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { ClientCounter } from "../ClientCounter";
 import { InteractiveChart } from "./InteractiveChart";
+import { UsersList } from "./UsersList";
 
 // This is a Server Component that imports Client Components
-// Demonstrates the composition pattern
+// Demonstrates the composition pattern with Suspense
 
-interface User {
-	id: number;
-	name: string;
-	email: string;
-	username: string;
-}
-
-async function getUsers(): Promise<User[]> {
-	const res = await fetch(
-		"https://jsonplaceholder.typicode.com/users?_limit=3",
-		{
-			cache: "no-store", // Always fresh data
-		}
+function UsersListFallback() {
+	return (
+		<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+			{[...Array(3)].map((_, i) => (
+				<Skeleton key={i} variant="rectangular" height={80} />
+			))}
+		</Box>
 	);
-
-	if (!res.ok) {
-		throw new Error(`HTTP error! status: ${res.status}`);
-	}
-
-	return res.json();
 }
 
-export default async function MixedPage() {
-	// Server-side data fetching
-	const users = await getUsers();
-	console.log(users);
+export default function MixedPage() {
 	const serverTime = new Date().toLocaleString();
 
 	return (
@@ -89,20 +75,9 @@ export default async function MixedPage() {
 						>
 							Fetched on server at: {serverTime}
 						</Typography>
-						<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-							{users.map((user) => (
-								<Card key={user.id} variant="outlined">
-									<CardContent>
-										<Typography variant="h6" sx={{ fontWeight: "semibold" }}>
-											{user.name}
-										</Typography>
-										<Typography variant="body2" color="text.secondary">
-											@{user.username} • {user.email}
-										</Typography>
-									</CardContent>
-								</Card>
-							))}
-						</Box>
+						<Suspense fallback={<UsersListFallback />}>
+							<UsersList />
+						</Suspense>
 					</Box>
 
 					{/* Client Component Section */}
@@ -124,12 +99,27 @@ export default async function MixedPage() {
 							gutterBottom
 							sx={{ fontWeight: "semibold" }}
 						>
-							Client Component: Chart (Using Server Data)
+							Client Component: Chart (Using Server Data with Suspense)
 						</Typography>
-						<InteractiveChart users={users} />
+						<Suspense
+							fallback={<Skeleton variant="rectangular" height={200} />}
+						>
+							<InteractiveChartWrapper />
+						</Suspense>
 					</Box>
 				</Paper>
 			</Container>
 		</Box>
 	);
+}
+
+// Wrapper component to fetch data and pass to client component
+// Wrapper component to fetch data and pass to client component
+async function InteractiveChartWrapper() {
+	const res = await fetch(
+		"https://jsonplaceholder.typicode.com/users?_limit=3",
+		{ cache: "no-store" }
+	);
+	const users = await res.json();
+	return <InteractiveChart users={users} />;
 }

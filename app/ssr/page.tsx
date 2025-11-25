@@ -1,36 +1,33 @@
-import { Box, Container, Typography, Paper, Chip, Link } from "@mui/material";
+import { Suspense } from "react";
+import {
+	Box,
+	Container,
+	Typography,
+	Paper,
+	Skeleton,
+	Link,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { PostsList } from "./PostsList";
 
 // This is a Server Component (default in Next.js App Router)
 // - Runs on the server
 // - Can use async/await directly
 // - Can access backend resources, databases, etc.
 // - Automatically benefits from React Server Components
+// - Uses Suspense for streaming and better UX
 
-interface Post {
-	userId: number;
-	id: number;
-	title: string;
-	body: string;
-}
-
-async function getPosts(): Promise<Post[]> {
-	// Fetch with revalidation every 60 seconds
-	const res = await fetch(
-		"https://jsonplaceholder.typicode.com/posts?_limit=5",
-		{
-			next: { revalidate: 60 },
-		}
+function PostsListFallback() {
+	return (
+		<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+			{[...Array(5)].map((_, i) => (
+				<Skeleton key={i} variant="rectangular" height={120} />
+			))}
+		</Box>
 	);
-	if (!res.ok) {
-		throw new Error("Failed to fetch posts");
-	}
-	return res.json();
 }
 
-export default async function SSRPage() {
-	const posts = await getPosts();
-
+export default function SSRPage() {
 	return (
 		<Box
 			sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4, px: 2 }}
@@ -68,45 +65,12 @@ export default async function SSRPage() {
 						gutterBottom
 						sx={{ fontWeight: "semibold", mb: 3 }}
 					>
-						Latest Posts (Revalidated every 60s)
+						Latest Posts (Streaming with Suspense)
 					</Typography>
 
-					<Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-						{posts.map((post) => (
-							<Paper
-								key={post.id}
-								variant="outlined"
-								sx={{
-									p: 2,
-									transition: "box-shadow 0.3s",
-									"&:hover": { boxShadow: 3 },
-								}}
-							>
-								<Typography
-									variant="h6"
-									gutterBottom
-									sx={{ fontWeight: "semibold" }}
-								>
-									{post.title}
-								</Typography>
-								<Typography variant="body1" color="text.secondary" paragraph>
-									{post.body}
-								</Typography>
-								<Box sx={{ display: "flex", gap: 1 }}>
-									<Chip
-										label={`Post ID: ${post.id}`}
-										size="small"
-										variant="outlined"
-									/>
-									<Chip
-										label={`User ID: ${post.userId}`}
-										size="small"
-										variant="outlined"
-									/>
-								</Box>
-							</Paper>
-						))}
-					</Box>
+					<Suspense fallback={<PostsListFallback />}>
+						<PostsList />
+					</Suspense>
 				</Paper>
 			</Container>
 		</Box>
