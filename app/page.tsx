@@ -7,18 +7,13 @@ import {
 	CardContent,
 	CardActionArea,
 } from "@mui/material";
+import { WelcomeMessage } from "./components/WelcomeMessage";
 
 export default function Home() {
 	return (
-		<Box
-			sx={{
-				minHeight: "100vh",
-				background: "linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%)",
-				py: 8,
-			}}
-		>
+		<Box sx={{ py: 8 }}>
 			<Container>
-				<Box sx={{ textAlign: "center", mb: 8 }}>
+				<Box sx={{ textAlign: "center", mb: 4 }}>
 					<Typography
 						variant="h2"
 						component="h1"
@@ -27,6 +22,8 @@ export default function Home() {
 						Next.js
 					</Typography>
 				</Box>
+
+				<WelcomeMessage />
 
 				<Box
 					sx={{

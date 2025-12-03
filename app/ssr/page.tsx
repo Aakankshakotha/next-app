@@ -9,13 +9,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { PostsList } from "./PostsList";
-
-// This is a Server Component (default in Next.js App Router)
-// - Runs on the server
-// - Can use async/await directly
-// - Can access backend resources, databases, etc.
-// - Automatically benefits from React Server Components
-// - Uses Suspense for streaming and better UX
+import { UserSelector } from "../components/UserSelector";
 
 function PostsListFallback() {
 	return (
@@ -27,11 +21,9 @@ function PostsListFallback() {
 	);
 }
 
-export default function SSRPage() {
+export default async function SSRPage() {
 	return (
-		<Box
-			sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4, px: 2 }}
-		>
+		<Box sx={{ py: 4, px: 2 }}>
 			<Container maxWidth="lg">
 				<Box
 					component={Link}
@@ -50,15 +42,17 @@ export default function SSRPage() {
 					<Typography>Back to Home</Typography>
 				</Box>
 
-				<Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+				<Paper elevation={3} sx={{ p: 4, borderRadius: 2, mb: 3 }}>
 					<Typography
 						variant="h3"
 						component="h1"
 						gutterBottom
 						sx={{ fontWeight: "bold" }}
 					>
-						Server Component Example
+						Server-Side Rendering Example
 					</Typography>
+
+					<UserSelector />
 
 					<Typography
 						variant="h5"
